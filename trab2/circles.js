@@ -31,11 +31,23 @@ window.onload = function () {
     }
     
     let botao_circulo = document.createElement('button');
-    botao_circulo.append('Adicionar novo círculo');
+    botao_circulo.append('Adicionar novos círculos');
     botao_circulo.onmousedown = function() {
         let new_color = document.getElementById('select_cor').value;
-        createCircle(new_color)
+        let num_circles = document.getElementById('number_circles').value;
+        
+        if(num_circles == '') alert("Escolha um número de círculos!");
+        else
+            for(let i = 0; i < num_circles; i++)
+                createCircle(new_color)
     }
+
+    let number_circles = document.createElement('input');
+    number_circles.id = "number_circles"
+    number_circles.value = 1
+    number_circles.setAttribute('type','number');
+    number_circles.style.width = '35px';
+    number_circles.style.marginRight = '0.5rem';
 
     let select_cor = document.createElement('select');
     select_cor.id = "select_cor";
@@ -49,7 +61,9 @@ window.onload = function () {
     
     div_botoes.appendChild(botao_remover);
     div_botoes.appendChild(botao_circulo);
-    div_botoes.append("Cor do novo círculo:");
+    div_botoes.append("Número de novos círculos:");
+    div_botoes.appendChild(number_circles);
+    div_botoes.append("Cor dos novos círculos:");
     div_botoes.appendChild(select_cor);
 
     document.body.appendChild(div_circles);
