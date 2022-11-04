@@ -1,0 +1,49 @@
+body {
+    display: flex;
+}
+.container {
+    margin:auto;
+    width: auto;
+    height: auto;
+}
+.titulo {
+    position: relative; 
+    font-family:Cambria, Cochin, Georgia, Times, 'Times New Roman', serif;
+    display: block;
+    text-align: center;
+    
+}
+#board {
+    width: 800px;
+    height: 800px;
+    background-color: #080;
+    
+}
+
+#board, td {
+    margin: 3.5rem auto;
+    border: 3px solid black;
+}
+
+td {
+    position: relative;
+}
+
+.circle {
+    width: 95%;
+    height: 95%;
+    border-radius: 50%;
+    border: 3px solid black;
+    position: absolute;
+    top: 0;
+    left: 0;
+    
+}
+
+.color-black {
+    background-color: #0a0a0a;
+}
+
+.color-white {
+    background-color: white;
+}
