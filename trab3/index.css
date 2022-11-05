@@ -13,6 +13,14 @@ body {
     text-align: center;
     
 }
+
+#cur_player{
+    position: relative; 
+    font-family:Cambria, Cochin, Georgia, Times, 'Times New Roman', serif;
+    display: block;
+    text-align: center;
+}
+
 #board {
     width: 800px;
     height: 800px;
@@ -29,6 +37,7 @@ td {
     position: relative;
 }
 
+
 .circle {
     width: 95%;
     height: 95%;
@@ -37,13 +46,19 @@ td {
     position: absolute;
     top: 0;
     left: 0;
-    
+    transition: height 0.3s, top 0.3s;
+    transition-timing-function: ease-out;
 }
 
 .color-black {
-    background-color: #0a0a0a;
+    background-image: radial-gradient(#444 5%, black 70%);
 }
 
 .color-white {
-    background-color: white;
+    background-image: radial-gradient(white 5%, #444 95%);
+}
+
+.animation {
+    height: 0% !important;
+    top: 50% !important;
 }
