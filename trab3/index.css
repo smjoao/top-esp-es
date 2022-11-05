@@ -1,11 +1,17 @@
 body {
     display: flex;
 }
+
 .container {
     margin:auto;
     width: auto;
     height: auto;
 }
+
+.hidden {
+    display: none !important;
+}
+
 .titulo {
     position: relative; 
     font-family:Cambria, Cochin, Georgia, Times, 'Times New Roman', serif;
@@ -48,6 +54,10 @@ td {
     left: 0;
     transition: height 0.3s, top 0.3s;
     transition-timing-function: ease-out;
+}
+
+.move-indicator {
+    opacity: 0.5;
 }
 
 .color-black {

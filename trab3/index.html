@@ -6,13 +6,19 @@
     </head>
     <body>
         <div class="container">
-        <div id="titulo" title="Othello" class="titulo">
-            <h1>Othello</h1>
-            <h3>Feito por: João Pedro Seda e Lucas Hélio</h3>
-        </div>
-        <div id="cur_player"></div>
-        <table id="board">     
-        </table>
+            <div id="titulo" title="Othello" class="titulo">
+                <h1>Othello</h1>
+                <h3>Feito por: João Pedro Seda e Lucas Hélio</h3>
+                <div id="menu">
+                    <button id="pvp">Jogador x Jogador</button>
+                    <button id="pve">Jogador x Minimax</button>    
+                </div>
+                <button class="hidden" id="restart">Voltar ao menu</button>
+            </div>
+            <div id="cur_player" class="hidden">
+            </div>
+            <table id="board">     
+            </table>
         </div>
         <script src="othello.js"></script>
     </body> 
