@@ -34,6 +34,9 @@ let cur_legal_moves;
 // Define qual será a cor do minimax (quando estiver jogando contra minimax)
 let minimax_state;
 
+// Contador de peças para cada jogador
+let p_count = 0;
+let b_count = 0;
 
 // Matrix que guarda a posição das peças no tabuleiro atualmente
 // 'x' = vazio
@@ -140,21 +143,37 @@ function makeBoard() {
 
 // Pega informação da matriz das posições das peças e coloca os círculos no tabuleiro
 function drawBoard() {
-
+    p_count = 0;
+    b_count = 0;
     let player;
 
     if(cur_state == states.B_PLAYING ) player = "Branco";
     else player = "Preto";
 
     document.getElementById('cur_player').innerHTML = "<h2>Jogador Atual: " + player + "</h2>"
-
+    
+    
     for(let i = 0; i < BOARDSIZE; i++) {       
         for(let j = 0; j < BOARDSIZE; j++) {
             let id = (i*10)+j;          
             let td = document.getElementById(id.toString())
             createcircle(td, board_matrix[i][j]);
+
+            if(board_matrix[i][j] == 'p') p_count++;
+            else if(board_matrix[i][j] == 'b') b_count++;
         }    
     }
+
+    let score = document.getElementById('score')
+    score.innerHTML = "";
+    
+    let para_p = document.createElement('p');
+    para_p.innerHTML = "Jogador Preto: " + p_count.toString() + " peças"
+    let para_b = document.createElement('p');
+    para_b.innerHTML = "Jogador Branco: " + b_count.toString() + " peças"
+
+    score.appendChild(para_p);
+    score.appendChild(para_b);
 }
 
 // Função para quando um jogador faz uma jogada
@@ -395,6 +414,7 @@ function startPVPGame() {
     cur_legal_moves = getLegalMoves();
     document.getElementById('menu').classList.toggle('hidden');
     document.getElementById('cur_player').classList.remove('hidden');
+    document.getElementById('score').classList.remove('hidden');
 }
 
 function startPVEGame() {
@@ -403,21 +423,11 @@ function startPVEGame() {
     cur_legal_moves = getLegalMoves();
     document.getElementById('menu').classList.toggle('hidden');
     document.getElementById('cur_player').classList.remove('hidden');
+    document.getElementById('score').classList.remove('hidden');
 }
 
 function endGameMsg() {
-    let p_count = 0;
-    let b_count = 0;
-
     document.getElementById('cur_player').classList.toggle('hidden');
-
-    for(let i = 0; i < BOARDSIZE; i++) {       
-        for(let j = 0; j < BOARDSIZE; j++) {
-            if( board_matrix[i][j] == 'p') p_count++;
-            else if ( board_matrix[i][j] == 'b') b_count++;
-        }    
-    }
-
     alert("Fim de jogo");
 
     let msg;
@@ -429,17 +439,10 @@ function endGameMsg() {
     let window = document.createElement('div');
     window.className = "fim";
 
-    let p1 = document.createElement('p');
-    p1.innerHTML = "Jogador Preto: " + p_count.toString() + " peças"
-    let p2 = document.createElement('p');
-    p2.innerHTML = "Jogador Branco: " + b_count.toString() + " peças"
-    let p3 = document.createElement('p');
-    p3.innerHTML = msg;
+    let winner = document.createElement('h2');
+    winner.innerHTML = msg;
 
-    
-    window.appendChild(p1);
-    window.appendChild(p2);
-    window.appendChild(p3);
+    window.appendChild(winner);
     
     document.getElementById('titulo').appendChild(window);
 
@@ -463,6 +466,7 @@ function restart() {
     document.getElementById('restart').classList.toggle('hidden');
     document.getElementById('menu').classList.remove('hidden');
     document.getElementById('titulo').lastChild.remove();
+    document.getElementById('score').classList.toggle('hidden');
 
     drawBoard();
 
