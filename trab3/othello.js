@@ -1,8 +1,8 @@
 window.onload = function() {
     makeBoard();
     drawBoard();
-    cur_legal_moves = getLegalMoves();
-    
+    cur_legal_moves = {};
+
     document.getElementById('restart').addEventListener('click', restart);
     document.getElementById('pvp').addEventListener('click', startPVPGame);
     document.getElementById('pve').addEventListener('click', startPVEGame);
@@ -24,6 +24,9 @@ const states = {
 
 // Tamanho do tabuleiro
 const BOARDSIZE = 8;
+
+// Profundidade da busca do minimax
+const MINIMAX_DEPTH = 3;
 
 // Estado atual do jogo (começa no menu)
 let cur_state = states.MENU;
@@ -81,10 +84,10 @@ function createcircle(td, color) {
                     this.removeEventListener('transitionend', transition_func);
         
                     if (color_copy == 'p') {
-                        this.classList.remove('color-white'); //preto
+                        this.classList.remove('color-white'); 
                         this.classList.toggle('color-black'); //preto
                     } else if (color_copy == 'b') {
-                        this.classList.remove('color-black'); //preto
+                        this.classList.remove('color-black'); 
                         this.classList.toggle('color-white'); //branco
                     } 
         
@@ -143,8 +146,6 @@ function makeBoard() {
 
 // Pega informação da matriz das posições das peças e coloca os círculos no tabuleiro
 function drawBoard() {
-    p_count = 0;
-    b_count = 0;
     let player;
 
     if(cur_state == states.B_PLAYING ) player = "Branco";
@@ -158,11 +159,12 @@ function drawBoard() {
             let id = (i*10)+j;          
             let td = document.getElementById(id.toString())
             createcircle(td, board_matrix[i][j]);
-
-            if(board_matrix[i][j] == 'p') p_count++;
-            else if(board_matrix[i][j] == 'b') b_count++;
         }    
     }
+
+    let count = evaluate_board(board_matrix);
+    p_count = count.p_count;
+    b_count = count.b_count;
 
     let score = document.getElementById('score')
     score.innerHTML = "";
@@ -174,6 +176,21 @@ function drawBoard() {
 
     score.appendChild(para_p);
     score.appendChild(para_b);
+}
+
+// Avalia a pontuação do tabuleiro
+function evaluate_board(board_matrix) {
+    let p_count = 0;
+    let b_count = 0;
+
+    for(let i = 0; i < BOARDSIZE; i++) {       
+        for(let j = 0; j < BOARDSIZE; j++) {
+            if(board_matrix[i][j] == 'p') p_count++;
+            else if(board_matrix[i][j] == 'b') b_count++;
+        }
+    }
+
+    return { 'p_count': p_count, 'b_count': b_count };
 }
 
 // Função para quando um jogador faz uma jogada
@@ -188,7 +205,7 @@ function makeMove() {
     let j = parseInt(this.id) % 10;    // jogadas possiveis
 
     let affected = cur_legal_moves[this.id]
-    for(let id of affected) changeColor(id);
+    for(let id of affected) changeColor(id, board_matrix);
 
     // decide quem joga na proxima rodada
     let next_state;
@@ -207,7 +224,7 @@ function makeMove() {
     setTimeout(function() {
         cur_state = next_state;
 
-        cur_legal_moves = getLegalMoves();
+        cur_legal_moves = getLegalMoves(cur_state, board_matrix);
 
         if ( Object.keys(cur_legal_moves).length == 0 ) { 
 
@@ -217,7 +234,7 @@ function makeMove() {
                 cur_state = states.B_PLAYING;
             }
 
-            cur_legal_moves = getLegalMoves();
+            cur_legal_moves = getLegalMoves(cur_state, board_matrix);
 
             if ( Object.keys(cur_legal_moves).length == 0 ) { // jogo acabou
                 cur_state = states.FINISHED;
@@ -227,7 +244,7 @@ function makeMove() {
         }
 
         if ( cur_state == minimax_state ) {
-            let next_move = minimax_search();
+            let next_move = minimax_search(true, cur_state, copy_matrix(board_matrix), MINIMAX_DEPTH).move;
             let td = document.getElementById(next_move);
 
             td.dispatchEvent(new Event('click'));
@@ -236,9 +253,8 @@ function makeMove() {
 
 }
 
-function changeColor(id) {
-    let circle = document.getElementById(id.toString()).firstChild;
-
+// Muda a cor de uma peça no tabuleiro
+function changeColor(id, board_matrix) {
     let i = Math.floor(parseInt(id) / 10);
     let j = parseInt(id) % 10;
 
@@ -251,7 +267,9 @@ function changeColor(id) {
 
 }
 
-function getLegalMoves() {
+// Retorna um dicionário onde cada chave são os ids dos possíveis movimentos
+// e os valores são os ids das peças que serão afetadas pelo movimento
+function getLegalMoves(cur_state, board_matrix) {
     let res = {}
     let opponent_color, player_color;
 
@@ -404,28 +422,105 @@ function getLegalMoves() {
     return res
 }
 
-function minimax_search() {
-    return Object.keys(cur_legal_moves)[0];
+// Retorna a diferença entre as pontuações das duas peças
+function score_diff(board_matrix) {
+    let values = evaluate_board(board_matrix);
+
+    return values.p_count - values.b_count;
 }
 
+
+// Algoritmo Minimax para escolher o próximo movimento
+function minimax_search(isMax, cur_state, board_matrix, depth) {
+    
+    if(depth == 0)
+        return {
+            move: '',
+            value: score_diff(board_matrix)
+        };
+    
+    let legal_moves = getLegalMoves(cur_state, board_matrix);
+    
+    if( Object.keys(legal_moves).length == 0 ) {
+
+        let next_state;
+        if ( cur_state == states.B_PLAYING ) next_state = states.P_PLAYING; 
+        else if ( cur_state == states.P_PLAYING ) next_state = states.B_PLAYING;
+
+        if( Object.keys(getLegalMoves(next_state, board_matrix)) ) {
+            return {
+                move: '',
+                value: score_diff(board_matrix)
+            };
+        }
+
+
+        let rec = minimax_search(!isMax, next_state, copy_matrix(board_matrix), depth-1);
+
+        return {
+            move: '',
+            value: rec.value
+        };
+    }
+
+    let res = {
+        move: '',
+        value: ( isMax ? -Infinity : Infinity )
+    }
+
+    for ( let key of Object.keys(legal_moves) ) {
+        let i = Math.floor(parseInt(key) / 10);
+        let j = parseInt(key) % 10;
+        let copy = copy_matrix(board_matrix);
+        let next_state;
+        if ( cur_state == states.B_PLAYING ) {
+            copy[i][j] = 'b';
+            next_state = states.P_PLAYING;
+        } else if ( cur_state == states.P_PLAYING ) {
+            copy[i][j] = 'p';
+            next_state = states.B_PLAYING;
+        }
+        
+        let affected = legal_moves[key];
+        for(let id of affected) changeColor(id, copy);
+
+        let rec = minimax_search(!isMax, next_state, copy, depth-1);
+
+        if( (isMax && rec.value > res.value) || (!isMax && rec.value < res.value) ) {
+            res.value = rec.value;
+            res.move = key;
+        }
+    }
+
+    return res;
+}
+
+// Faz uma cópia de uma matriz
+function copy_matrix(matrix) {
+    return JSON.parse(JSON.stringify(matrix))
+}
+
+// Começa um jogo Jogador x Jogador
 function startPVPGame() {
     minimax_state = null;
     cur_state = states.P_PLAYING;
-    cur_legal_moves = getLegalMoves();
+    cur_legal_moves = getLegalMoves(cur_state, board_matrix);
     document.getElementById('menu').classList.toggle('hidden');
     document.getElementById('cur_player').classList.remove('hidden');
     document.getElementById('score').classList.remove('hidden');
 }
 
+// Começa um jogo Jogador x Minimax
 function startPVEGame() {
     minimax_state = states.B_PLAYING;
     cur_state = states.P_PLAYING;
-    cur_legal_moves = getLegalMoves();
+    cur_legal_moves = getLegalMoves(cur_state, board_matrix);
     document.getElementById('menu').classList.toggle('hidden');
     document.getElementById('cur_player').classList.remove('hidden');
     document.getElementById('score').classList.remove('hidden');
 }
 
+// Finaliza o jogo
 function endGameMsg() {
     document.getElementById('cur_player').classList.toggle('hidden');
     alert("Fim de jogo");
@@ -450,6 +545,7 @@ function endGameMsg() {
     
 }
 
+// Retorna ao menu inicial
 function restart() {
     board_matrix = [
         ['x','x','x','x','x','x','x','x'],
